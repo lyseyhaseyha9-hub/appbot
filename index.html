@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Mini App</title>
+    <!-- Telegram Web App Script -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Khmer -->
+    <link href="https://fonts.googleapis.com/css2?family=Preahvihear&family=Kantumruy+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-color: #3b82f6;
+            --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-color: #0f172a;
+            --text-secondary: #64748b;
+            --accent-color: #2563eb;
+            --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Kantumruy Pro', 'Preahvihear', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-bottom: 30px;
+        }
+
+        /* Theme Toggle Header Button */
+        .header-top {
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+        }
+
+        .theme-toggle-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px 16px;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: var(--shadow);
+        }
+
+        .theme-toggle-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Profile Card */
+        .profile-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--accent-gradient);
+        }
+
+        .avatar-container {
+            position: relative;
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid var(--accent-color);
+            flex-shrink: 0;
+            background: var(--border-color);
+        }
+
+        .avatar-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: var(--text-secondary);
+        }
+
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow: hidden;
+        }
+
+        .profile-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .profile-username, .profile-id {
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Menu List (3 Buttons) */
+        .menu-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .menu-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-color);
+        }
+
+        .menu-item:active {
+            transform: scale(0.98);
+        }
+
+        .menu-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 20px;
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+            flex-shrink: 0;
+        }
+
+        .menu-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <div class="container">
+        <!-- Theme Toggle Button -->
+        <div class="header-top">
+            <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()">
+                <i class="fa-solid fa-moon" id="themeIcon"></i>
+                <span id="themeText">ពេលយប់</span>
+            </button>
+        </div>
+
+        <!-- User Profile Card -->
+        <div class="profile-card">
+            <div class="avatar-container" id="avatarContainer">
+                <div class="avatar-placeholder"><i class="fa-solid fa-user"></i></div>
+            </div>
+            <div class="profile-info">
+                <div class="profile-name" id="profileName">កំពុងទាញយក...</div>
+                <div class="profile-username" id="profileUsername"><i class="fa-solid fa-at"></i> <span>username</span></div>
+                <div class="profile-id" id="profileId"><i class="fa-solid fa-id-badge"></i> <span>ID: ---</span></div>
+            </div>
+        </div>
+
+        <!-- Menu List (3 Buttons) -->
+        <div class="menu-list">
+            <!-- 1. ភ្នាក់ងារបើក account -->
+            <div class="menu-item" onclick="openAgentChat()">
+                <div class="menu-icon"><i class="fa-solid fa-user-tie"></i></div>
+                <div class="menu-title">ភ្នាក់ងារបើក account</div>
+            </div>
+
+            <!-- 2. របៀប download -->
+            <div class="menu-item" onclick="openDownloadChannel()">
+                <div class="menu-icon"><i class="fa-solid fa-cloud-arrow-down"></i></div>
+                <div class="menu-title">របៀប download</div>
+            </div>
+
+            <!-- 3. ទំនាក់ទំនង admin -->
+            <div class="menu-item" onclick="openAdminChat()">
+                <div class="menu-icon"><i class="fa-solid fa-headset"></i></div>
+                <div class="menu-title">ទំនាក់ទំនង admin</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================================
+        // ⚙️ កន្លែងកំណត់តំណភ្ជាប់ (Links) - អ្នកអាចកែប្រែទីនេះបានតាមចិត្ត
+        // ========================================================
+        const CONFIG = {
+            AGENT_CHAT_LINK: "@long_long_long_long0000000000001",     // លីងឆាតភ្នាក់ងារបើក account
+            DOWNLOAD_CHANNEL_LINK: "https://t.me/pay8betok", // លីងឆានែល/ក្រុម download
+            ADMIN_CHAT_LINK: "https://t.me/PAY8BET168 "      // លីងឆាតទំនាក់ទំនង admin
+        };
+
+        // Telegram WebApp Initialization
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+
+        // Load User Data from Telegram
+        window.addEventListener('DOMContentLoaded', () => {
+            loadUserData();
+        });
+
+        function loadUserData() {
+            const user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+            
+            const nameEl = document.getElementById('profileName');
+            const usernameEl = document.getElementById('profileUsername').querySelector('span');
+            const idEl = document.getElementById('profileId').querySelector('span');
+            const avatarContainer = document.getElementById('avatarContainer');
+
+            if (user) {
+                // ឈ្មោះពិត (First name + Last name)
+                let fullName = user.first_name || '';
+                if (user.last_name) fullName += ' ' + user.last_name;
+                nameEl.textContent = fullName || 'អ្នកប្រើប្រាស់ Telegram';
+
+                // Username ពិត
+                if (user.username) {
+                    usernameEl.textContent = user.username;
+                } else {
+                    usernameEl.textContent = 'គ្មាន Username';
+                }
+
+                // ID ពិត
+                idEl.textContent = 'ID: ' + (user.id || '---');
+
+                // រូបថតប្រវត្តិរូបពិត
+                if (user.photo_url) {
+                    avatarContainer.innerHTML = `<img src="${user.photo_url}" alt="Profile Photo">`;
+                }
+            } else {
+                // សម្រាប់ Test នៅខាងក្រៅ Telegram (Demo Data)
+                nameEl.textContent = 'អ្នកប្រើប្រាស់ (Demo)';
+                usernameEl.textContent = 'telegram_user';
+                idEl.textContent = 'ID: 123456789';
+            }
+        }
+
+        // Action Handlers
+        function openAgentChat() {
+            if (tg && tg.openTelegramLink) {
+                tg.openTelegramLink(CONFIG.AGENT_CHAT_LINK);
+            } else {
+                window.open(CONFIG.AGENT_CHAT_LINK, '_blank');
+            }
+        }
+
+        function openDownloadChannel() {
+            if (tg && tg.openTelegramLink) {
+                tg.openTelegramLink(CONFIG.DOWNLOAD_CHANNEL_LINK);
+            } else {
+                window.open(CONFIG.DOWNLOAD_CHANNEL_LINK, '_blank');
+            }
+        }
+
+        function openAdminChat() {
+            if (tg && tg.openTelegramLink) {
+                tg.openTelegramLink(CONFIG.ADMIN_CHAT_LINK);
+            } else {
+                window.open(CONFIG.ADMIN_CHAT_LINK, '_blank');
+            }
+        }
+
+        // Theme Toggle Handler (Dark / Light)
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                themeIcon.className = 'fa-solid fa-sun';
+                themeText.textContent = 'ពេលថ្ងៃ';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'fa-solid fa-moon';
+                themeText.textContent = 'ពេលយប់';
+            }
+        }
+    </script>
+</body>
+</html>
